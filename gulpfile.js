@@ -5,7 +5,9 @@ const cleanCSS = require('gulp-clean-css');
 const uglify = require('gulp-uglify-es').default;
 const del = require('del');
 const imagemin = require('gulp-imagemin');
-var jsdoc = require('gulp-jsdoc3');
+const jsdoc = require('gulp-jsdoc3');
+
+
 
 
 const cssFiles = [
@@ -29,12 +31,6 @@ function styles() {
         .pipe(gulp.dest('./build/css'))
 };
 
-function jsdoc() {
-    return gulp.task('doc', function (cb) {
-        gulp.src(['README.md', './src/js//*.js'], { read: false })
-            .pipe(jsdoc(cb));
-    });
-}
 
 function scripts() {
     return gulp.src(jsFiles)
@@ -63,6 +59,10 @@ function clean() {
 gulp.task('styles', styles);
 gulp.task('scripts', scripts);
 gulp.task('img', img);
+gulp.task('doc', function (cb) {
+    gulp.src(['README.md', './src/**/*.js'], { read: false })
+        .pipe(jsdoc(cb));
+});
 gulp.task('watch', watch);
 
 gulp.task('build', gulp.series(clean,

@@ -1,78 +1,145 @@
-function getHistory() {
-    return document.getElementById("history-value").innerText;
-}
-function printHistory(num) {
-    document.getElementById("history-value").innerText = num;
-}
-function getOutput() {
-    return document.getElementById("output-value").innerText;
-}
-function printOutput(num) {
-    if (num == "") {
-        document.getElementById("output-value").innerText = num;
-    }
-    else {
-        document.getElementById("output-value").innerText = getFormattedNumber(num);
-    }
-}
-function getFormattedNumber(num) {
-    if (num == "-") {
-        return "";
-    }
-    var n = Number(num);
-    var value = n.toLocaleString("en");
-    return value;
-}
-function reverseNumberFormat(num) {
-    return Number(num.replace(/,/g, ''));
-}
-var operator = document.getElementsByClassName("operator");
-for (var i = 0; i < operator.length; i++) {
-    operator[i].addEventListener('click', function () {
-        if (this.id == "clear") {
-            printHistory("");
-            printOutput("");
+/**
+ *
+ */
+(function () {
+    "use strict";
+
+    // Shortcut to get elements
+    /**
+     *
+     * @param {any} element
+     */
+    var el = function (element) {
+        if (element.charAt(0) === "#") { // If passed an ID...
+            return document.querySelector(element); // ... returns single element
         }
-        else if (this.id == "backspace") {
-            var output = reverseNumberFormat(getOutput()).toString();
-            if (output) {//if output has a value
-                output = output.substr(0, output.length - 1);
-                printOutput(output);
-            }
+
+        return document.querySelectorAll(element); // Otherwise, returns a nodelist
+    };
+
+    // Variables
+    var viewer = el("#viewer"), // Calculator screen where result is displayed
+        equals = el("#equals"), // Equal button
+        nums = el(".num"), // List of numbers
+        ops = el(".ops"), // List of operators
+        theNum = "", // Current number
+        oldNum = "", // First number
+        resultNum, // Result
+        operator; // Batman
+
+    // When: Number is clicked. Get the current number selected
+    /**
+     *
+     */
+    var setNum = function () {
+        if (resultNum) { // If a result was displayed, reset number
+            theNum = this.getAttribute("data-num");
+            resultNum = "";
+        } else { // Otherwise, add digit to previous number (this is a string!)
+            theNum += this.getAttribute("data-num");
         }
-        else {
-            var output = getOutput();
-            var history = getHistory();
-            if (output == "" && history != "") {
-                if (isNaN(history[history.length - 1])) {
-                    history = history.substr(0, history.length - 1);
-                }
-            }
-            if (output != "" || history != "") {
-                output = output == "" ? output : reverseNumberFormat(output);
-                history = history + output;
-                if (this.id == "=") {
-                    var result = eval(history);
-                    printOutput(result);
-                    printHistory("");
-                }
-                else {
-                    history = history + this.id;
-                    printHistory(history);
-                    printOutput("");
-                }
+
+        viewer.innerHTML = theNum; // Display current number
+
+    };
+
+    // When: Operator is clicked. Pass number to oldNum and save operator
+    /**
+     *
+     */
+    var moveNum = function () {
+        oldNum = theNum;
+        theNum = "";
+        operator = this.getAttribute("data-ops");
+
+        equals.setAttribute("data-result", ""); // Reset result in attr
+    };
+
+    // When: Equals is clicked. Calculate result
+    /**
+     * @returns {number} resultNum
+     */
+    var displayNum = function () {
+
+        // Convert string input to numbers
+        oldNum = parseFloat(oldNum);
+        theNum = parseFloat(theNum);
+
+
+        // Perform operation
+        switch (operator) {
+            case "plus":
+                resultNum = oldNum + theNum;
+                break;
+
+            case "minus":
+                resultNum = oldNum - theNum;
+                break;
+
+            case "times":
+                resultNum = oldNum * theNum;
+                break;
+
+            case "divided by":
+                resultNum = oldNum / theNum;
+                break;
+
+            // If equal is pressed without an operator, keep number and continue
+            default:
+                resultNum = theNum;
+        }
+
+
+        // If NaN or Infinity returned
+        if (!isFinite(resultNum)) {
+            if (isNaN(resultNum)) { // If result is not a number; set off by, eg, double-clicking operators
+                resultNum = "You broke it!";
+            } else { // If result is infinity, set off by dividing by zero
+                resultNum = "Look at what you've done";
+                el('#calculator').classList.add("broken"); // Break calculator
+                el('#reset').classList.add("show"); // And show reset button
             }
         }
 
-    });
-}
-var number = document.getElementsByClassName("number");
-for (var i = 0; i < number.length; i++) {
-    number[i].addEventListener('click', function () {
-        var output = reverseNumberFormat(getOutput());
-        if (output != NaN) { //if output is a number
-            output = output + this.id;
-            printOutput(output);
-        }
-    });
-}
+        // Display result, finally!
+        viewer.innerHTML = resultNum;
+        equals.setAttribute("data-result", resultNum);
+
+        // Now reset oldNum & keep result
+        oldNum = 0;
+        theNum = resultNum;
+
+    };
+
+    // When: Clear button is pressed. Clear everything
+    var clearAll = function () {
+        oldNum = "";
+        theNum = "";
+        viewer.innerHTML = "0";
+        equals.setAttribute("data-result", resultNum);
+    };
+
+    /* The click events */
+
+    // Add click event to numbers
+    for (var i = 0, l = nums.length; i < l; i++) {
+        nums[i].onclick = setNum;
+    }
+
+    // Add click event to operators
+    for (var i = 0, l = ops.length; i < l; i++) {
+        ops[i].onclick = moveNum;
+    }
+
+    // Add click event to equal sign
+    equals.onclick = displayNum;
+
+    // Add click event to clear button
+    el("#clear").onclick = clearAll;
+
+    // Add click event to reset button
+    el("#reset").onclick = function () {
+        window.location = window.location;
+    };
+
+}());
