@@ -1,12 +1,9 @@
-/**
- *
- */
+
 (function () {
     "use strict";
 
-    // Shortcut to get elements
     /**
-     *
+     * Shortcut to get elements
      * @param {any} element
      */
     var el = function (element) {
@@ -27,9 +24,8 @@
         resultNum, // Result
         operator; // Batman
 
-    // When: Number is clicked. Get the current number selected
     /**
-     *
+     * When: Number is clicked. Get the current number selected
      */
     var setNum = function () {
         if (resultNum) { // If a result was displayed, reset number
@@ -43,9 +39,9 @@
 
     };
 
-    // When: Operator is clicked. Pass number to oldNum and save operator
+
     /**
-     *
+     * When: Operator is clicked. Pass number to oldNum and save operator
      */
     var moveNum = function () {
         oldNum = theNum;
@@ -55,8 +51,9 @@
         equals.setAttribute("data-result", ""); // Reset result in attr
     };
 
-    // When: Equals is clicked. Calculate result
+
     /**
+     * When: Equals is clicked. Calculate result
      * @returns {number} resultNum
      */
     var displayNum = function () {
